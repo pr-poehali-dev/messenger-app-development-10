@@ -2,6 +2,7 @@ import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { type Chat, stories, chats } from "./types";
 import StoryViewer from "./StoryViewer";
+import AddStoryModal from "./AddStoryModal";
 
 function StoryCircle({ story, onClick }: { story: typeof stories[0]; onClick: () => void }) {
   return (
@@ -37,12 +38,29 @@ function StoryCircle({ story, onClick }: { story: typeof stories[0]; onClick: ()
 export default function ChatList({ onSelect, activeId }: { onSelect: (c: Chat) => void; activeId: number | null }) {
   const [search, setSearch] = useState("");
   const [viewingStory, setViewingStory] = useState<number | null>(null);
+  const [addingStory, setAddingStory] = useState(false);
+  const [myStory, setMyStory] = useState<{ bg: string; emoji: string; text: string } | null>(null);
   const filtered = chats.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
+
+  const handleStoryClick = (i: number) => {
+    if (stories[i].isMe) {
+      if (myStory) setViewingStory(i);
+      else setAddingStory(true);
+    } else {
+      setViewingStory(i);
+    }
+  };
 
   return (
     <div className="flex flex-col h-full">
+      {addingStory && (
+        <AddStoryModal
+          onClose={() => setAddingStory(false)}
+          onPublish={(s) => { setMyStory(s); }}
+        />
+      )}
       {viewingStory !== null && (
-        <StoryViewer startIndex={viewingStory} onClose={() => setViewingStory(null)} />
+        <StoryViewer startIndex={viewingStory} onClose={() => setViewingStory(null)} myStory={myStory} />
       )}
 
       <div className="px-4 pb-3">
@@ -56,7 +74,25 @@ export default function ChatList({ onSelect, activeId }: { onSelect: (c: Chat) =
 
       <div className="px-4 pb-4">
         <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-          {stories.map((s, i) => <StoryCircle key={s.id} story={s} onClick={() => setViewingStory(i)} />)}
+          {stories.map((s, i) => (
+            <div key={s.id} className="relative">
+              <StoryCircle story={s} onClick={() => handleStoryClick(i)} />
+              {s.isMe && !myStory && (
+                <button
+                  onClick={() => setAddingStory(true)}
+                  className="absolute bottom-6 right-0 w-5 h-5 rounded-full flex items-center justify-center text-white z-10"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #22d3ee)", fontSize: 13, fontWeight: 700, pointerEvents: "none" }}
+                >
+                  +
+                </button>
+              )}
+              {s.isMe && myStory && (
+                <div className="absolute bottom-6 right-0 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: "#4ade80", border: "2px solid hsl(var(--background))" }}>
+                  <Icon name="Check" size={10} />
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
 

@@ -52,9 +52,10 @@ function ProgressBar({ count, current, progress }: { count: number; current: num
 type Props = {
   startIndex: number;
   onClose: () => void;
+  myStory?: { bg: string; emoji: string; text: string } | null;
 };
 
-export default function StoryViewer({ startIndex, onClose }: Props) {
+export default function StoryViewer({ startIndex, onClose, myStory }: Props) {
   const [storyIndex, setStoryIndex] = useState(startIndex);
   const [slideIndex, setSlideIndex] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -66,7 +67,8 @@ export default function StoryViewer({ startIndex, onClose }: Props) {
   const elapsedRef = useRef<number>(0);
 
   const currentStory: Story = stories[storyIndex];
-  const slides = storyContents[currentStory.id] ?? [{ bg: "linear-gradient(135deg, #7c3aed, #22d3ee)", emoji: currentStory.avatar, text: "" }];
+  const defaultSlides = storyContents[currentStory.id] ?? [{ bg: "linear-gradient(135deg, #7c3aed, #22d3ee)", emoji: currentStory.avatar, text: "" }];
+  const slides = currentStory.isMe && myStory ? [myStory] : defaultSlides;
   const totalSlides = slides.length;
 
   const goNext = useCallback(() => {
