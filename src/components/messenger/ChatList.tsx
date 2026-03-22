@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 import { type Chat, stories, chats } from "./types";
+import StoryViewer from "./StoryViewer";
 
 function StoryCircle({ story, onClick }: { story: typeof stories[0]; onClick: () => void }) {
   return (
@@ -35,10 +36,15 @@ function StoryCircle({ story, onClick }: { story: typeof stories[0]; onClick: ()
 
 export default function ChatList({ onSelect, activeId }: { onSelect: (c: Chat) => void; activeId: number | null }) {
   const [search, setSearch] = useState("");
+  const [viewingStory, setViewingStory] = useState<number | null>(null);
   const filtered = chats.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div className="flex flex-col h-full">
+      {viewingStory !== null && (
+        <StoryViewer startIndex={viewingStory} onClose={() => setViewingStory(null)} />
+      )}
+
       <div className="px-4 pb-3">
         <div className="relative">
           <div className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "hsl(var(--muted-foreground))" }}>
@@ -50,7 +56,7 @@ export default function ChatList({ onSelect, activeId }: { onSelect: (c: Chat) =
 
       <div className="px-4 pb-4">
         <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-          {stories.map(s => <StoryCircle key={s.id} story={s} onClick={() => {}} />)}
+          {stories.map((s, i) => <StoryCircle key={s.id} story={s} onClick={() => setViewingStory(i)} />)}
         </div>
       </div>
 
